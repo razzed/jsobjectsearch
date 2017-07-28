@@ -20,22 +20,24 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-(function (exports) {
-	var objectSearch = function (root, pattern, compare) {
+(function(exports) {
+	var objectSearch = function(root, pattern, compare) {
 		"use strict";
 		var magic = "__traversing_objectSearch";
-		var tos = function (x) { return Object.prototype.toString.call(x); };
-	    var isArray = function(test) {
-	        return tos(test) === '[object Array]';
-	    };
-	    var isObject = function(test) {
-	        return test !== null && typeof test === "object";
-	    };
-		var isRE = function (test) {
+		var tos = function(x) {
+			return Object.prototype.toString.call(x);
+		};
+		var isArray = function(test) {
+			return tos(test) === '[object Array]';
+		};
+		var isObject = function(test) {
+			return test !== null && typeof test === "object";
+		};
+		var isRE = function(test) {
 			return tos(test) === "[object RegExp]";
 		};
 		var transaction = (new Date()).getTime();
-		var searchRecursion = function (object, pattern, path) {
+		var searchRecursion = function(object, pattern, path) {
 			var v, k, newpath;
 			var r = [];
 			if (isObject(object)) {
@@ -57,8 +59,7 @@
 						}
 					}
 					delete object[magic];
-				} catch (e) {
-				}
+				} catch (e) {}
 			} else {
 				for (k = 0; k < object.length; k++) {
 					v = object[k];
@@ -74,22 +75,22 @@
 		if (!isRE(pattern)) {
 			throw new Error("argument 2 must be a pattern");
 		}
-	    return searchRecursion(root, pattern, []);
+		return searchRecursion(root, pattern, []);
 	};
 
-	exports.objectSearchKeys = function (root, pattern) {
-		return objectSearch(root, pattern, function (object, key, value, pattern) {
+	exports.objectSearchKeys = function(root, pattern) {
+		return objectSearch(root, pattern, function(object, key, value, pattern) {
 			return pattern.exec(key) !== null;
 		});
 	};
-	exports.objectSearchValues = function (root, pattern) {
-	    var isArray = function(test) {
-	        return Object.prototype.toString.call(test) === '[object Array]';
-	    };
-	    var isObject = function(test) {
-	        return test !== null && typeof test === "object";
-	    };
-		return objectSearch(root, pattern, function (object, key, value, pattern) {
+	exports.objectSearchValues = function(root, pattern) {
+		var isArray = function(test) {
+			return Object.prototype.toString.call(test) === '[object Array]';
+		};
+		var isObject = function(test) {
+			return test !== null && typeof test === "object";
+		};
+		return objectSearch(root, pattern, function(object, key, value, pattern) {
 			if (isArray(value) || isObject(value)) {
 				return false;
 			}
