@@ -10,7 +10,7 @@ It returns a list of paths (dot-separated) of keys or values which match, e.g.
 
 	[ "order.orderID", "order.products[2].code" ]
 
-The primary purpose of this is to search the `window` object on a page to see if values used for analytics recording (e.g. order ID, etc.) are stored as a local JavaScript varaible.
+The primary purpose of this is to search the `window` object on a page to see if values used for analytics recording (e.g. order ID, etc.) are stored as a local JavaScript variable.
 
 ## Version history
 
