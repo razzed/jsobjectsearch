@@ -21,21 +21,29 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 (function(exports) {
+	"use strict";
+	// This stuff that JavaScript should provide, but doesn't
+	var opp = Object.prototype; // You know me!
+	// Convert an object to a string type
+	var tos = function(x) {
+		return opp.toString.call(x);
+	};
+	// Is it an array?
+	var isArray = function(test) {
+		return tos(test) === '[object Array]';
+	};
+	// Is it an object?
+	var isObject = function(test) {
+		return test !== null && typeof test === "object";
+	};
+	// Is it a RegExp?
+	var isRE = function(test) {
+		return tos(test) === "[object RegExp]";
+	};
+	// Given an object root, a RegExp pattern, and 
+	// a compare method which takes (object, key, value, pattern) and returns true to match and false to not match
 	var objectSearch = function(root, pattern, compare) {
-		"use strict";
 		var magic = "__traversing_objectSearch";
-		var tos = function(x) {
-			return Object.prototype.toString.call(x);
-		};
-		var isArray = function(test) {
-			return tos(test) === '[object Array]';
-		};
-		var isObject = function(test) {
-			return test !== null && typeof test === "object";
-		};
-		var isRE = function(test) {
-			return tos(test) === "[object RegExp]";
-		};
 		var transaction = (new Date()).getTime();
 		var searchRecursion = function(object, pattern, path) {
 			var v, k, newpath;
@@ -47,7 +55,7 @@
 					}
 					object[magic] = transaction;
 					for (k in object) {
-						if (Object.prototype.hasOwnProperty.call(object, k)) {
+						if (opp.hasOwnProperty.call(object, k)) {
 							newpath = path.slice();
 							newpath.push(k);
 							v = object[k];
@@ -77,19 +85,12 @@
 		}
 		return searchRecursion(root, pattern, []);
 	};
-
 	exports.objectSearchKeys = function(root, pattern) {
 		return objectSearch(root, pattern, function(object, key, value, pattern) {
 			return pattern.exec(key) !== null;
 		});
 	};
 	exports.objectSearchValues = function(root, pattern) {
-		var isArray = function(test) {
-			return Object.prototype.toString.call(test) === '[object Array]';
-		};
-		var isObject = function(test) {
-			return test !== null && typeof test === "object";
-		};
 		return objectSearch(root, pattern, function(object, key, value, pattern) {
 			if (isArray(value) || isObject(value)) {
 				return false;
