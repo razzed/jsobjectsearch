@@ -24,6 +24,7 @@
 	"use strict";
 	// This stuff that JavaScript should provide, but doesn't
 	var opp = Object.prototype; // You know me!
+	var hop = opp.hasOwnProperty;
 	// Convert an object to a string type
 	var tos = function(x) {
 		return opp.toString.call(x);
@@ -43,39 +44,47 @@
 	// Given an object root, a RegExp pattern, and 
 	// a compare method which takes (object, key, value, pattern) and returns true to match and false to not match
 	var objectSearch = function(root, pattern, compare) {
-		var magic = "__traversing_objectSearch";
-		var transaction = (new Date()).getTime();
-		var searchRecursion = function(object, pattern, path) {
+		var magic = "__traversing_objectSearch";		// A marker for any object we traverse to avoid infinite loops
+		var transaction = (new Date()).getTime();		// The magic number we use to mark each object just in case
+		var searchRecursion = function(object, path) {	// Search object which is at "path"
 			var v, k, newpath;
 			var r = [];
+			// object MUST be an Object or Array
 			if (isObject(object)) {
+				// If it's an object, recurse
 				try {
 					if (object[magic] === transaction) {
 						return r;
 					}
 					object[magic] = transaction;
 					for (k in object) {
-						if (opp.hasOwnProperty.call(object, k)) {
-							newpath = path.slice();
-							newpath.push(k);
-							v = object[k];
-							if (compare(object, k, v, pattern)) {
-								r.push(newpath.join("."));
-							} else if (isObject(v) || isArray(v)) {
-								r = r.concat(searchRecursion(v, pattern, newpath));
-							}
+						if (!hop.call(object, k)) {
+							continue;
+						}
+						newpath = path.slice();
+						newpath.push(k);
+						v = object[k];
+						if (compare(object, k, v, pattern)) {
+							r.push(newpath.join("."));
+						} 
+						if (isObject(v) || isArray(v)) {
+							r = r.concat(searchRecursion(v, newpath));
 						}
 					}
 					delete object[magic];
 				} catch (e) {}
-			} else {
-				for (k = 0; k < object.length; k++) {
-					v = object[k];
-					if (isObject(v) || isArray(v)) {
-						newpath = path.slice();
-						newpath.push('[' + k + ']');
-						r = r.concat(searchRecursion(v, pattern, newpath));
-					}
+				return r;
+			} 
+			// It's an array, iterate
+			for (k = 0; k < object.length; k++) {
+				v = object[k];
+				newpath = path.slice();
+				newpath.push('[' + k + ']');
+				if (compare(object, String(k), v, pattern)) {
+					r.push(newpath.join("."));
+				} 
+				if (isObject(v) || isArray(v)) {
+					r = r.concat(searchRecursion(v, newpath));
 				}
 			}
 			return r;
@@ -83,7 +92,7 @@
 		if (!isRE(pattern)) {
 			throw new Error("argument 2 must be a pattern");
 		}
-		return searchRecursion(root, pattern, []);
+		return searchRecursion(root, []);
 	};
 	exports.objectSearchKeys = function(root, pattern) {
 		return objectSearch(root, pattern, function(object, key, value, pattern) {
